@@ -1,86 +1,98 @@
-<!DOCTYPE html>
-<!--
-Who Wants to Be a Millionaire Quiz Game Markup
-Intended to Play a Single Game.
-WWBAM materials used under fair use for academic/scholar use, should not be
-distributed otherwise.
-
-Author: Aaron Nech
--->
 <html>
 	<head>
-		<link href="http://fonts.googleapis.com/css?family=Roboto+Slab" rel="stylesheet" type="text/css" />
-		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<meta charset="utf-8">
+		<meta title="Who Wants to be a Millionaire? - Setup">
+		<title>(Beta) Who Wants to be a Millionaire? - Setup</title>
+		<meta name="description" content="Who Wants to be a Millionaire? Quiz Edition for Desktop. This is the setup screen.">
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<script src="functions.js"></script>
+		<script>
+			
+			function onload(){
+				sessionStorage.setItem("footertext2", "Coding and graphics by Samuel Kitson - Music from the TV show - Questions from various sources - Last modified on "+String(document.lastModified)+" - ");
+				document.getElementById("footer").innerHTML = sessionStorage.getItem("footertext2")+"331 lines of code";
+				localStorage.setItem("status", "idle");
+				if (window.innerWidth > window.innerHeight*(3/2)) {
+					document.getElementById("prizestable").style.fontSize = String(window.innerHeight/25);
+				} else {
+					document.getElementById("prizestable").style.fontSize = "3.5vw";
+				};
+				localStorage.setItem('prizes', '{"list": ["£100","£200","£300","£500","£1,000","£2,000","£4,000","£8,000","£16,000","£32,000","£64,000","£125,000","£250,000","£500,000","£1,000,000"]}');
+				fillPrizesTable((JSON.parse(localStorage.getItem("prizes"))).list);
+				fixPrizeHighlight();
+				document.getElementById("questiontext").innerHTML = "Where do you want to go?"
+				//alert("Enter this code on the controller screen: "+code+"\nPress the enter key to continue...");
+			};
+		</script>
 	</head>
-	<body>
-		<!-- HTML5 Audio tags - weakly supported, works in Chrome(tested) -->
-		<audio id="background" src='sound/background.mp3'></audio>
-		<audio id="rightsound" src='sound/right.mp3'></audio>
-		<audio id="wrongsound" src='sound/wrong.mp3'></audio>
-
-		<!-- Before the game begins problem set selection -->
-		<div id="pre-start">
-			<select id="problem-set">
-			</select>
-			<button id="start">Start!</button>
+	<body ononline="online()" onoffline="offline()" onload="onload()" id="body">
+		<div id="prizedetails"></div>
+		<div id="audienceresults"></div>
+		<div id="setuphelp">
+			<h3>Welcome to 'Who Wants to be a Millionaire' Quiz Edition</h3>
+			<p>This <u>unoffical</u> game has 100s of questions on a range of topics. The 2 main game modes are explained below:</p>
+			<ul>
+				<li><strong>Practice mode: </strong>also known as single player, this mode is designed for you to test your skills against the computer. All lifelines are fully simulated</li>
+				<li><strong>Quiz mode: </strong>this mode is designed for group quizzes. You need 2 screens to use this mode to its potential - one for the controller and one for the player. The controller must input all lifeline results.</li>
+			</ul>
 		</div>
-
-		<!-- Shown when the player wins/loses -->
-		<div id="game-over">
+		<div id="countdown" onclick="countdown()">30</div>
+		<div id="nosignal">
+			<img id="nosignalimg" src="images/millionaire no signal.png">
+			<p id="nosignaltext">No signal<br>Reconnect to continue</p>
 		</div>
-
-		<!-- The actual game markup -->
-		<div id="game">
-			<div id="top">
-				<img src="img/logo.jpg" id="logo" />
-				<ul id="levels">
-					<li data-bind="css: {active: level() == 15}" data-amt="1000000" data-lvl="15">$1,000,000</li>
-					<li data-bind="css: {active: level() == 14}" data-amt="500000" data-lvl="14">$500,000</li>
-					<li data-bind="css: {active: level() == 13}" data-amt="250000" data-lvl="13">$250,000</li>
-					<li data-bind="css: {active: level() == 12}" data-amt="125000" data-lvl="12">$125,000</li>
-					<li data-bind="css: {active: level() == 11}" data-amt="64000" data-lvl="11">$64,000</li>
-					<li data-bind="css: {active: level() == 10}" data-amt="32000" data-lvl="10">$32,000</li>
-					<li data-bind="css: {active: level() == 9}" data-amt="16000" data-lvl="9">$16,000</li>
-					<li data-bind="css: {active: level() == 8}" data-amt="8000" data-lvl="8">$8,000</li>
-					<li data-bind="css: {active: level() == 7}" data-amt="4000" data-lvl="7">$4,000</li>
-					<li data-bind="css: {active: level() == 6}" data-amt="2000" data-lvl="6">$2,000</li>
-					<li data-bind="css: {active: level() == 5}" data-amt="1000" data-lvl="5">$1,000</li>
-					<li data-bind="css: {active: level() == 4}" data-amt="500" data-lvl="4">$500</li>
-					<li data-bind="css: {active: level() == 3}" data-amt="300" data-lvl="3">$300</li>
-					<li data-bind="css: {active: level() == 2}" data-amt="200" data-lvl="2">$200</li>
-					<li data-bind="css: {active: level() == 1}" data-amt="100" data-lvl="1">$100</li>
-				</ul>
-				<div class="clear"></div>
-			</div>
-			<div id="options">
-				<div id="fifty" class="options-button" data-bind="click: fifty"></div>
-				<div id="phone-friend" class="options-button" data-bind="click: fadeOutOption"></div>
-				<div id="audience" class="options-button" data-bind="click: fadeOutOption"></div>
-				<div id="money">$<span data-bind="text: formatMoney()"></span></div>
-			</div>
-			<div id="question-box">
-				<span class="big-text">Q:</span>
-				<span class="content" data-bind="text: getQuestionText()"></span>
-			</div>
-			<div id="answer-box">
-				<div id="answer-one" class="answer" data-bind="click: function() { answerQuestion(0, $element.id) }">
-					<span class="big-text">A.</span><span data-bind="text: getAnswerText(0)"></span>
-				</div>
-				<div id="answer-two" class="answer" data-bind="click: function() { answerQuestion(1, $element.id) }">
-					<span class="big-text">B.</span><span data-bind="text: getAnswerText(1)"></span>
-				</div>
-				<div id="answer-three" class="answer" data-bind="click: function() { answerQuestion(2, $element.id) }">
-					<span class="big-text">C.</span><span data-bind="text: getAnswerText(2)"></span>
-				</div>
-				<div id="answer-four" class="answer" data-bind="click: function() { answerQuestion(3, $element.id) }">
-					<span class="big-text">D.</span><span data-bind="text: getAnswerText(3)"></span>
-				</div>
-			</div>
-		</div>
-
-		<!-- Script inclusion: JQuery for effects, Knockout for MVVM, millionaire.js for application -->
-		<script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
-		<script type="text/javascript" src="js/knockout-3.0.0.js"></script>
-		<script type="text/javascript" src="js/millionaire.js"></script>
+		<!--<table id="lifelinestable">
+			<tr>
+				<td><img id="lifeline5050" class="lifelineimg" src="images/millionaire 5050.png" onclick="lifeline('5050')"></td>
+				<td><img id="lifelinephone" class="lifelineimg" src="images/millionaire phone.png" onclick="lifeline('phone')"></td>
+				<td><img id="lifelineaudience" class="lifelineimg" src="images/millionaire audience.png" onclick="lifeline('audience')"></td>
+			</tr>
+		</table>-->
+		<table id="questiontable">
+			<tr>
+				<td colspan="2" id="questioncell">
+					<div class="imgcontainer">
+						<img src="images/millionaire large.png" class="tableimg">
+						<div id="questiontext">SETUP SCREEN</div>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td id="answer1cell">
+					<div class="imgcontainer">
+						<img onclick="selectans(1)" id="answer1img" src="images/millionaire small left.png" class="tableimg">
+						<div onclick="selectans(1)" class="answertext answertextleft" id="answer1text"></div>
+					</div>
+				</td>
+				<td id="answer2cell">
+					<div class="imgcontainer">
+						<img onclick="selectans(2)" id="answer2img" src="images/millionaire small right.png" class="tableimg">
+						<div onclick="selectans(2)" class="answertext answertextright" id="answer2text"></div>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td id="answer3cell">
+					<div class="imgcontainer">
+						<img onclick="selectans(3)" id="answer3img" src="images/millionaire small left.png" class="tableimg">
+						<div onclick="selectans(3)" class="answertext answertextleft" id="answer3text"></div>
+					</div>
+				</td>
+				<td id="answer4cell">
+					<div class="imgcontainer">
+						<img onclick="selectans(4)" id="answer4img" src="images/millionaire small right.png" class="tableimg">
+						<div onclick="selectans(4)" class="answertext answertextright" id="answer4text"></div>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<table id="prizestable">
+			<tr>
+				<td><a id="prizes15A" class="prizesA"></a></td>
+				<td><a id="prizes15B" class="prizesB"></a></td>
+				<td><a id="prizes15C" class="prizesC"></a></td>
+			</tr>
+		</table>
+		<p id="footer">Coding and graphics by Samuel Kitson - Music from the TV show - Questions from various sources</p>
 	</body>
 </html>
